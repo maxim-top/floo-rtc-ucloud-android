@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.library'
+    id 'com.kezong.fat-aar'
+}
+
+android {
+    compileSdkVersion 29
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0.1"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
+    android.libraryVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "floo-rtc-ucloud-android" + "_${variant.mergedFlavor.versionName}" + '.aar'
+        }
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    compileOnly fileTree(dir: "libs", include: ["*.jar", "*.aar"])
+}
+
+task aarcopy (type: Copy, dependsOn: "assembleRelease") {
+    from("build/outputs/aar")
+    into("../../aar/")
+}
