@@ -1,8 +1,12 @@
 package top.maxim.rtc.engine;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.ucloudrtclib.sdkengine.UCloudRtcSdkEngine;
 import com.ucloudrtclib.sdkengine.UCloudRtcSdkEnv;
@@ -27,8 +31,11 @@ import com.ucloudrtclib.sdkengine.define.UCloudRtcSdkVideoOutputOrientationMode;
 import com.ucloudrtclib.sdkengine.define.UCloudRtcSdkVideoProfile;
 import com.ucloudrtclib.sdkengine.listener.UCloudRtcSdkEventListener;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import im.floo.floolib.BMXAudioProfile;
 import im.floo.floolib.BMXErrorCode;
@@ -357,29 +364,50 @@ public class UCloudEngine extends BMXRTCEngine {
     private static String APP_ID;
     private static String APP_KEY;
 
-    public static void init(Application application, String appId, String appKey) {
-        APP_ID = appId;
-        APP_KEY = appKey;
-        UCloudRtcSdkEnv.initEnv(application);
-        UCloudRtcSdkEnv.setWriteToLogCat(true);
-        UCloudRtcSdkEnv.setLogReport(true);
-        UCloudRtcSdkEnv.setEncodeMode(UCloudRtcSdkPushEncode.UCLOUD_RTC_PUSH_ENCODE_MODE_H264);
-        UCloudRtcSdkEnv.setLogLevel(UCloudRtcSdkLogLevel.UCLOUD_RTC_SDK_LogLevelInfo);
-        UCloudRtcSdkEnv.setSdkMode(UCloudRtcSdkMode.UCLOUD_RTC_SDK_MODE_TRIAL);
-        UCloudRtcSdkEnv.setReConnectTimes(60);
-        UCloudRtcSdkEnv.setTokenSecKey(APP_KEY);
-        //UCloudRtcSdkEnv.setDeviceChannelType(UCloudRtcSdkChannelType.UCLOUD_RTC_SDK_CHANNEL_TYPE_VOICE);
-        //推流方向
-//        UCloudRtcSdkEnv.setPushOrientation(UCloudRtcSdkPushOrentation.UCLOUD_RTC_PUSH_PORTRAIT_MODE);
-        //视频输出模式
-        UCloudRtcSdkEnv.setVideoOutputOrientation(UCloudRtcSdkVideoOutputOrientationMode.UCLOUD_RTC_VIDEO_OUTPUT_FIXED_PORTRAIT_MODE);
-        //私有化部署
-//        UCloudRtcSdkEnv.setPrivateDeploy(true);
-//        UCloudRtcSdkEnv.setPrivateDeployRoomURL("wss://xxx:5005/ws");
-        //无限重连
-//        UCloudRtcSdkEnv.setReConnectTimes(-1);
-        //默认vp8编码，可以改成h264
-//        UCloudRtcSdkEnv.setEncodeMode(UcloudRtcSdkPushEncode.UCLOUD_RTC_PUSH_ENCODE_MODE_H264);
+    public static void init(Application application) {
+        String propertiesFile = "";
+        try {
+            PackageManager e = application.getPackageManager();
+            ApplicationInfo info = e.getApplicationInfo(
+                    application.getPackageName(), PackageManager.GET_META_DATA);
+            propertiesFile = info.metaData.getString("UCloudProperties");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (TextUtils.isEmpty(propertiesFile)){
+            throw new RuntimeException("A meta-data UCloudProperties in AndroidManifest.xml required");
+        }
+
+        Properties properties = new Properties();
+        AssetManager assetManager = application.getAssets();
+        InputStream inputStream = null;
+        try {
+            inputStream = assetManager.open(propertiesFile);
+            properties.load(inputStream);
+            String appId = properties.getProperty("AppId");
+            String appKey = properties.getProperty("AppKey");
+            String writeToLogCat = properties.getProperty("WriteToLogCat");
+            String logReport = properties.getProperty("LogReport");
+            String uCloudRtcSdkPushEncode = properties.getProperty("UCloudRtcSdkPushEncode");
+            String uCloudRtcSdkLogLevel = properties.getProperty("UCloudRtcSdkLogLevel");
+            String uCloudRtcSdkMode = properties.getProperty("UCloudRtcSdkMode");
+            String reConnectTimes = properties.getProperty("ReConnectTimes");
+            String uCloudRtcSdkVideoOutputOrientationMode = properties.getProperty("UCloudRtcSdkVideoOutputOrientationMode");
+
+            APP_ID = appId;
+            APP_KEY = appKey;
+            UCloudRtcSdkEnv.initEnv(application);
+            UCloudRtcSdkEnv.setWriteToLogCat("true".equals(writeToLogCat));
+            UCloudRtcSdkEnv.setLogReport("true".equals(logReport));
+            UCloudRtcSdkEnv.setEncodeMode(UCloudRtcSdkPushEncode.valueOf(uCloudRtcSdkPushEncode));
+            UCloudRtcSdkEnv.setLogLevel(UCloudRtcSdkLogLevel.valueOf(uCloudRtcSdkLogLevel));
+            UCloudRtcSdkEnv.setSdkMode(UCloudRtcSdkMode.valueOf(uCloudRtcSdkMode));
+            UCloudRtcSdkEnv.setReConnectTimes(Integer.parseInt(reConnectTimes));
+            UCloudRtcSdkEnv.setTokenSecKey(APP_KEY);
+            UCloudRtcSdkEnv.setVideoOutputOrientation(UCloudRtcSdkVideoOutputOrientationMode.valueOf(uCloudRtcSdkVideoOutputOrientationMode));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

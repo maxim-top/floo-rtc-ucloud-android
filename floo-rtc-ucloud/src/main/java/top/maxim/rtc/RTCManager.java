@@ -32,7 +32,7 @@ public class RTCManager{
 
     public void init(Application application, BMXClient bmxClient){
         mService = bmxClient.getRTCManager();
-        UCloudEngine.init(application,"urtc-tcz01qrv","5b289a266a6751cc2a325c638b5cfbc8");
+        UCloudEngine.init(application);
         mService.setupRTCEngine(new UCloudEngine());
     }
 

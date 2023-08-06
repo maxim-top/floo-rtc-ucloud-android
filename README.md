@@ -2,7 +2,7 @@
 
 蓝莺IM，是由[美信拓扑](https://www.maximtop.com/)团队研发的新一代即时通讯云服务，SDK设计简单集成方便，服务采用云原生技术和多云架构，私有云也可按月付费。
 
-蓝莺IM RTC SDK(UCloud版)，则是在UCloud URTC基础上封装的实时音视频SDK。目前的版本提供一对一的视频通话和语音通话功能。
+蓝莺IM RTC SDK(UCloud版)，则是在[UCloud URTC](https://docs.ucloud.cn/urtc/README)基础上封装的实时音视频SDK。目前的版本提供一对一的视频通话和语音通话功能。
 
 [![Scc Count Badge](https://sloc.xyz/github/maxim-top/floo-rtc-ucloud-android/?category=total&avg-wage=1)](https://github.com/maxim-top/floo-rtc-ucloud-android/) [![Scc Count Badge](https://sloc.xyz/github/maxim-top/floo-rtc-ucloud-android/?category=code&avg-wage=1)](https://github.com/maxim-top/floo-rtc-ucloud-android/)
 
@@ -27,8 +27,29 @@ BMXRTCServiceListener用于接收RTC基本类型的消息。如果您还有其�
 BMXRtcRenderView提供了视频画面渲染功能，本地和远程视频画面都可以使用。
 
 ## 开发
+### 配置UCloud环境
+1. AndroidManifest.xml中application字段增加meta-data字段，设置UCloud RTC环境，例如
+```
+<meta-data
+    android:name="UCloudProperties"
+    android:value="urtc.properties" />
+```
+
+2. 在项目assets目录新建properties文件，比如urtc.properties，例如
+```
+AppId=urtc-xxxxxx
+AppKey=xxxxxx
+WriteToLogCat=true
+LogReport=true
+UCloudRtcSdkPushEncode=UCLOUD_RTC_PUSH_ENCODE_MODE_H264
+UCloudRtcSdkLogLevel=UCLOUD_RTC_SDK_LogLevelInfo
+UCloudRtcSdkMode=UCLOUD_RTC_SDK_MODE_TRIAL
+ReConnectTimes=60
+UCloudRtcSdkVideoOutputOrientationMode=UCLOUD_RTC_VIDEO_OUTPUT_FIXED_PORTRAIT_MODE
+```
 
 ### 创建用户界面
+
 1. 导入视频画面类依赖
 ```
 import top.maxim.rtc.view.BMXRtcRenderView;
